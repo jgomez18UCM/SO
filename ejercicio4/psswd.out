@@ -1,0 +1,24 @@
+[Entry 22]
+	login: syslog
+	pass: x
+	uid: 104
+	gid: 110
+	user: 
+	home: /home/syslog
+	shell: /usr/sbin/nologin
+[Entry 30]
+	login: cups-pk-helper
+	pass: x
+	uid: 112
+	gid: 119
+	user: user for cups-pk-helper service,,,
+	home: /home/cups-pk-helper
+	shell: /usr/sbin/nologin
+[Entry 40]
+	login: usuarioso
+	pass: x
+	uid: 1000
+	gid: 1001
+	user: usuarioso
+	home: /home/usuarioso
+	shell: /bin/bash

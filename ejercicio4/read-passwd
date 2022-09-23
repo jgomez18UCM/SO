@@ -1,0 +1,12 @@
+#!/bin/bash
+i=1
+while IFS=':' read login_name pass uid gid user_name user_home user_shell; do
+    if test "$(dirname $user_home)" = "/home"; then
+        printf "[Entry $i]\n"
+        printf "\tlogin: $login_name\n\tpass: $pass\n\tuid: $uid\n\tgid: $gid\n\tuser: $user_name\n\thome: $user_home\n\tshell: $user_shell\n"       
+    fi
+    i=$(($i+1))
+done < /etc/passwd
+
+#para hacerlo en un solo comando se puede usar grep ./home < /etc/passwd | cut -d ':' -f6
+#o cut -d ':' -f6 < /etc/passwd | grep /home
