@@ -178,6 +178,7 @@ static int show_passwd(struct options* options)
 int main(int argc, char *argv[])
 {
 	int retCode, opt;
+	char* passwdOrigin = "/etc/passwd";
 	struct options options;
 
 	/* Initialize default values for options */
@@ -185,7 +186,7 @@ int main(int argc, char *argv[])
 	options.output_mode=VERBOSE_MODE;
 
 	/* Parse command-line options */
-	while((opt = getopt(argc, argv, "hvpo:")) != -1) {
+	while((opt = getopt(argc, argv, "hvpo:i:")) != -1) {
 		switch(opt) {
 		case 'h':
 			fprintf(stderr,"Usage: %s [ -h | -v | -p | -o <output_file> ]\n",argv[0]);
@@ -204,6 +205,8 @@ int main(int argc, char *argv[])
 				exit(EXIT_FAILURE);
 			}
 			break;
+		case 'i':
+			passwdOrigin = optarg;
 		default:
 			exit(EXIT_FAILURE);
 		}
