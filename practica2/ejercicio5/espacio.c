@@ -13,6 +13,8 @@ He estado haciendo pruebas, y creo que estamos haciendo la cuenta de bloques mal
 du -ks cuando hay una carpeta vacia devuelve 4kb, cuando nuestro programa devuelve 0. Realmente estamos
 sacando los mismos bloques que estamos midiendo? A ver si estamos midiendo otra cosa.
 
+ANTES DE LOS CAMBIOS EN ESTE COMMIT
+
 daniel@Ordis:~/Documentos/GitHub/SO/practica2/ejercicio5$ ./espacio *
 8K dir1
 48K espacio
@@ -25,6 +27,9 @@ daniel@Ordis:~/Documentos/GitHub/SO/practica2/ejercicio5$ du -ks *
 4       espacio.c
 12      espacio.o
 4       Makefile
+
+TRAS LOS CAMBIOS EN ESTE COMMIT
+
 daniel@Ordis:~/Documentos/GitHub/SO/practica2/ejercicio5$ ./espacio *
 8K dir1
 48K espacio
@@ -35,6 +40,9 @@ daniel@Ordis:~/Documentos/GitHub/SO/practica2/ejercicio5$ du -ks *
 24      espacio
 12      espacio.o
 4       Makefile
+
+PRUEBA CARPETA VACIA
+
 daniel@Ordis:~/Documentos/GitHub/SO/practica2/ejercicio5$ du -ks *
 4       a
 4       dir1
