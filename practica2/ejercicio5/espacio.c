@@ -23,10 +23,10 @@ int get_size(char *fname, size_t *blocks)
 	}
 
 	if(S_ISDIR(s.st_mode)){
+		*blocks += s.st_blocks/2;
 		if(get_size_dir(fname, blocks) == -1) return -1;
 	}else{
-		*blocks += s.st_blocks;
-		//printf("%ld %p ", *blocks, blocks);
+		*blocks += s.st_blocks/2;
 	}
 	return 0;
 }
@@ -53,9 +53,8 @@ int get_size_dir(char *dname, size_t *blocks)
 			strcpy(dest, dname);
 			strcat(dest, "/");
 			strcat(dest, nextfile->d_name);
-			if(nextfile->d_type == DT_DIR){
-				
-				get_size_dir(dest, blocks);
+			if(nextfile->d_type == DT_DIR){				
+				get_size(dest, blocks);
 			}
 			else{
 				
