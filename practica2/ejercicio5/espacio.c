@@ -7,6 +7,58 @@
 #include <string.h>
 
 
+/*MENSAJE PARA EL CHEMA Y EL DANI DEL FUTURO
+
+He estado haciendo pruebas, y creo que estamos haciendo la cuenta de bloques mal. Si haces
+du -ks cuando hay una carpeta vacia devuelve 4kb, cuando nuestro programa devuelve 0. Realmente estamos
+sacando los mismos bloques que estamos midiendo? A ver si estamos midiendo otra cosa.
+
+ANTES DE LOS CAMBIOS EN ESTE COMMIT
+
+daniel@Ordis:~/Documentos/GitHub/SO/practica2/ejercicio5$ ./espacio *
+8K dir1
+48K espacio
+8K espacio.c
+24K espacio.o
+8K Makefile
+daniel@Ordis:~/Documentos/GitHub/SO/practica2/ejercicio5$ du -ks *
+8       dir1
+24      espacio
+4       espacio.c
+12      espacio.o
+4       Makefile
+
+TRAS LOS CAMBIOS EN ESTE COMMIT
+
+daniel@Ordis:~/Documentos/GitHub/SO/practica2/ejercicio5$ ./espacio *
+8K dir1
+48K espacio
+24K espacio.o
+8K Makefile
+daniel@Ordis:~/Documentos/GitHub/SO/practica2/ejercicio5$ du -ks *
+12      dir1
+24      espacio
+12      espacio.o
+4       Makefile
+
+PRUEBA CARPETA VACIA
+
+daniel@Ordis:~/Documentos/GitHub/SO/practica2/ejercicio5$ du -ks *
+4       a
+4       dir1
+24      espacio
+4       espacio.c
+12      espacio.o
+4       Makefile
+daniel@Ordis:~/Documentos/GitHub/SO/practica2/ejercicio5$ ./espacio *
+8K a
+0K dir1
+48K espacio
+8K espacio.c
+24K espacio.o
+8K Makefile
+*/
+
 /* Forward declaration */
 int get_size_dir(char *fname, size_t *blocks);
 
