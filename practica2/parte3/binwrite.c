@@ -68,7 +68,7 @@ cierra el archivo
 /*
 PREGUNTAS AL POFE
 
-student_t es un puntero opaco al struct, cómo sacamos su tamaño?
+student_t es un puntero opaco al struct, cómo sacamos su tamaño? ¿cuál es su tamaño siquiera?
 
 
 */
@@ -78,7 +78,7 @@ student_t es un puntero opaco al struct, cómo sacamos su tamaño?
 
 student_t * parse_records(char * records[], int nrecords)
 {
-    student_t something[nrecords];
+    student_t something[nrecords] = malloc(sizeof(student_t) * nrecords);
 
     for (int i = 0; i < nrecords ; i++){
         something[i].student_id =  atoi(strsep(records[i], ':'));
@@ -121,5 +121,8 @@ int main(int argc, char argv[]){
     //switch de opciones varias
 
     //cerrar el archivo del param -f
+
+    printf("%d", sizeof(student_t));
+
     return 0;
 }
