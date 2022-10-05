@@ -59,6 +59,7 @@ daniel@Ordis:~/Documentos/GitHub/SO/practica2/ejercicio5$ ./espacio *
 8K Makefile
 */
 
+
 /* Forward declaration */
 int get_size_dir(char *fname, size_t *blocks);
 

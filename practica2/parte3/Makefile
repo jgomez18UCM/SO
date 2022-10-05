@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS = -Wall -g
 
-PROG = binwrite
+PROG = student-records
 OBJECTS = $(PROG).o
 LIBS = defs.h
 
