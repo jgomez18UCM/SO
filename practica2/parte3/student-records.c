@@ -12,6 +12,12 @@
         -i
         -n
 
+
+    PREGUNTAR POR LOS PUNTEROS DEL STRUCT
+    parse_records
+    dump_entries
+    read_student_file
+    loadstr
 */
 
 student_t* parse_records(char* records[], int nr_records){
