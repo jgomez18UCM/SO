@@ -22,17 +22,13 @@
 
 student_t* parse_records(char* records[], int nr_records){
     student_t* students = malloc(sizeof(student_t) * nr_records);
-    printf("%ld %ld\n", sizeof(student_t), sizeof(*students));
     for(int i = 0; i < nr_records; i++){
         students[i].id = atoi(strsep(&records[i], ":"));
-        printf("primer strcpy\n");
         strcpy(students[i].NIF, strsep(&records[i], ":"));
-        printf("NIF %s\n", students[i].NIF);
-        strcpy(students[i].first_name, strsep(&records[i], ":"));
-        printf("primer nom %s\n", students[i].first_name);
-        strcpy(students[i].last_name, strsep(&records[i], ":"));
-        printf("segundo nom %s\n", students[i].last_name);
+        students[i].first_name = strsep(&records[i], ":");
+        students[i].last_name = strsep(&records[i], ":");
     }
+    printf("returning\n");
     return students;
 }
 
@@ -54,7 +50,7 @@ int main(int argc, char** argv){
     char c;
     FILE* file = NULL;
     int nr_entries;
-    student_t* students = NULL;
+    student_t* students = malloc(sizeof(student_t)*argc);
     while((c = getopt(argc, argv, "hl:q:i:n:c:a:l:f:")) != -1){
         switch(c){
             case 'h':
@@ -82,14 +78,24 @@ int main(int argc, char** argv){
                     return -1;
                 }
                 nr_entries = argc - optind + 1;
-                students = parse_records(&argv[optind-1], nr_entries);
+                char** buf = malloc(sizeof(char*) * nr_entries); 
+                for(int i = 0; i < nr_entries; i++){
+                    buf[i] = argv[optind-1+i];
+                }
+                students = parse_records(buf, nr_entries);
+                free(buf);
+                
                 dump_entries(students, nr_entries, file);
+                
                 break;
             default:
                 break;
         }     
     }
+    
     if(file!=NULL) fclose(file);
+    
     if(students != NULL) free(students);
+   
     return 0;
 }

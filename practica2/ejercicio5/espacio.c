@@ -115,6 +115,7 @@ int get_size_dir(char *dname, size_t *blocks)
 			}
 		}
 	}
+	return 0;
 }
 
 /* Processes all the files in the command line calling get_size on them to
