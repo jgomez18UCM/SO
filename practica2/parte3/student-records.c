@@ -28,7 +28,6 @@ student_t* parse_records(char* records[], int nr_records){
         students[i].first_name = strsep(&records[i], ":");
         students[i].last_name = strsep(&records[i], ":");
     }
-    printf("returning\n");
     return students;
 }
 
