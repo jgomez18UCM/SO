@@ -5,17 +5,12 @@
 #include "defs.h"
 /*
     TO DO:
-    -c 
     -a
     -l
     -q
         -i
         -n
 
-
-    PREGUNTAR POR LOS PUNTEROS DEL STRUCT
-    parse_records
-    dump_entries
     read_student_file
     loadstr
 */
@@ -32,6 +27,12 @@ student_t* parse_records(char* records[], int nr_records){
 }
 
 int dump_entries(student_t* entries, int nr_entries, FILE* students){
+    for(int i = 0; i < nr_entries; i++){
+        fwrite(&entries[i].id, sizeof(int), 1, students);
+        fwrite(&entries[i].NIF, strlen(entries[i].NIF)+1, 1, students);
+        fwrite(entries[i].first_name, strlen(entries[i].first_name)+1, 1, students);
+        fwrite(entries[i].last_name, strlen(entries[i].last_name)+1, 1, students);
+    }
     return 0;
 }
 
@@ -50,15 +51,14 @@ int main(int argc, char** argv){
     FILE* file = NULL;
     int nr_entries;
     student_t* students = malloc(sizeof(student_t)*argc);
+    char* pathname;
     while((c = getopt(argc, argv, "hl:q:i:n:c:a:l:f:")) != -1){
         switch(c){
             case 'h':
                 fprintf(stderr, "Usage: ./student-records -f file [ -h | -l | -c | -a | -q [ -i|-n ID] ]  [ list of records ]\n");
                 break;
             case 'f':
-                if((file = fopen(optarg, "a+"))  == NULL){
-                    return -1;
-                }
+                pathname = optarg;
                 break;
             case 'l':
                 if(file == NULL){
@@ -73,7 +73,7 @@ int main(int argc, char** argv){
                 }
                 break;
             case 'c':
-                if(file == NULL){
+                if((file= fopen(pathname, "w+")) == NULL){
                     return -1;
                 }
                 nr_entries = argc - optind + 1;
@@ -83,7 +83,6 @@ int main(int argc, char** argv){
                 }
                 students = parse_records(buf, nr_entries);
                 free(buf);
-                
                 dump_entries(students, nr_entries, file);
                 
                 break;
