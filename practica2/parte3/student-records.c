@@ -10,8 +10,10 @@
         -i
         -n
 */
+//Forward declarations.
 char* loadstr(FILE* students);
 
+//Este metodo parsea las strings contenidas en el array records a structs de tipo student_t (definido en defs.h) y las devuelve en un array.
 student_t* parse_records(char* records[], int nr_records){
     student_t* students = (student_t*) malloc(sizeof(student_t) * nr_records);
     for(int i = 0; i < nr_records; i++){
@@ -23,6 +25,7 @@ student_t* parse_records(char* records[], int nr_records){
     return students;
 }
 
+//Este metodo recibe un array de student_t por el puntero entries y vuelca en binario el contenido al archivo students
 int dump_entries(student_t* entries, int nr_entries, FILE* students){
     for(int i = 0; i < nr_entries; i++){
         fwrite(&entries[i].id, sizeof(int), 1, students);
@@ -33,6 +36,8 @@ int dump_entries(student_t* entries, int nr_entries, FILE* students){
     return 0;
 }
 
+//Este metodo devuelve un puntero a student_t donde se recogen las entradas leidas del archivo students. Ademas devuelve en el parametro
+//nr_entries el numero de entradas recogidas.
 student_t* read_student_file(FILE* students, int* nr_entries){
     fseek(students, 0, SEEK_SET);
     fread(nr_entries, sizeof(int), 1, students);
@@ -49,6 +54,7 @@ student_t* read_student_file(FILE* students, int* nr_entries){
     return studet_list;
 }
 
+//Este metodo devuelve un puntero a una string null terminated del archivo students, empezando a leer desde donde este posicionado el marcador de posicion.
 char* loadstr(FILE* students){
     char c;
     int len = 1;
@@ -64,6 +70,14 @@ char* loadstr(FILE* students){
     return str;
 }
 
+//Este metodo imprime nr_entries del array entries en pantalla, en el formato 
+/*
+    [Entry #n]
+        id=[ID]
+        NIF=[NIF]
+        first_name=[first_name]
+        last_name=[last_name]
+*/
 void list_entries(student_t* entries, int nr_entries){
         int i;
         for(i = 0; i < nr_entries; i++){
@@ -73,6 +87,8 @@ void list_entries(student_t* entries, int nr_entries){
         }
 }
 
+//Este metodo filtra nr_args de entradas recibidas en el array list, segun nr_entries recibidas en el array students; volcandolas en el archivo file
+//si no existen, e imprimiendo "Found duplicate student_id [id]", si la id esta repetida. Ademas devuelve el numero de entradas no repetidas en el puntero nr_new.
 void filter(int nr_entries, int nr_args, int* nr_new, student_t* list, student_t* students, FILE* file){
     for(int i = 0; i< nr_args; i++){
         int found = 0;
@@ -89,6 +105,8 @@ void filter(int nr_entries, int nr_args, int* nr_new, student_t* list, student_t
     }
 }
 
+//Este metodo realiza una busqueda por id (tipo 1), o por NIF (tipo 2) en el array students, de tamaño nr_entries, segun el argumento arg.
+//Devuelve el indice de dicha entrada, en caso de que no exista, devuelve -1.
 int make_query(int type, student_t* students, int nr_entries, char* arg){
     int found = 0;
     int i = 0;
@@ -126,6 +144,7 @@ int main(int argc, char** argv){
     int query = 0;
     char* queryarg = "1";
     int querytype = 0;
+
     while((c = getopt(argc, argv, "hlqi:n:c:a:f:")) != -1){
         switch(c){
             case 'h':
@@ -140,6 +159,7 @@ int main(int argc, char** argv){
                 }
                 students = read_student_file(file, &nr_entries);
                 list_entries(students, nr_entries);
+                free(students);
                 fclose(file);
                 break;
             case 'c':
@@ -157,6 +177,7 @@ int main(int argc, char** argv){
                 fwrite(&nr_entries, sizeof(int), 1, file);
                 dump_entries(students, nr_entries, file);
                 fclose(file);
+                free(students);
                 break;
             case 'a':
                 if((file = fopen(pathname, "rb+")) == NULL){
@@ -181,6 +202,7 @@ int main(int argc, char** argv){
                 fwrite(&nr_entries, sizeof(int), 1, file);
                 printf("%d extra records written\n", nr_new);
                 fclose(file);
+                free(students);
                 break;
             case 'q':
                 query = 1;
@@ -198,18 +220,18 @@ int main(int argc, char** argv){
         }     
         
     }
+
     if(query == 1){
-         file = fopen(pathname, "rb");
-         students = read_student_file(file, &nr_entries);
-         int entry = make_query(querytype, students, nr_entries, queryarg);
-         if(entry != -1){
-             list_entries(&students[entry], 1);
-         }
+        file = fopen(pathname, "rb");
+        students = read_student_file(file, &nr_entries);
+        int entry = make_query(querytype, students, nr_entries, queryarg);
+        if(entry != -1){
+            student_t student = students[entry];
+            printf("[Entry #%d]\n\tstudent_id=%d\n\tNIF=%s\n\tfirst_name=%s\n\tlast_name=%s\n",
+            entry, student.id, student.NIF, student.first_name, student.last_name);
+        }
+        free(students);
         fclose(file);
-     }
-    //if(file!=NULL) fclose(file);
-    
-    //if(students != NULL) free(students);
-   
+    }   
     return 0;
 }
