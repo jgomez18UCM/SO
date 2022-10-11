@@ -13,7 +13,7 @@
 char* loadstr(FILE* students);
 
 student_t* parse_records(char* records[], int nr_records){
-    student_t* students = malloc(sizeof(student_t) * nr_records);
+    student_t* students = (student_t*) malloc(sizeof(student_t) * nr_records);
     for(int i = 0; i < nr_records; i++){
         students[i].id = atoi(strsep(&records[i], ":"));
         strcpy(students[i].NIF, strsep(&records[i], ":"));
@@ -36,7 +36,7 @@ int dump_entries(student_t* entries, int nr_entries, FILE* students){
 student_t* read_student_file(FILE* students, int* nr_entries){
     fseek(students, 0, SEEK_SET);
     fread(nr_entries, sizeof(int), 1, students);
-    student_t* studet_list = malloc(sizeof(student_t)*(*nr_entries));
+    student_t* studet_list = (student_t*) malloc(sizeof(student_t)*(*nr_entries));
     for(int i = 0; i < *nr_entries; i++){
         fread(&studet_list[i].id, sizeof(int), 1, students);
         
@@ -64,39 +64,90 @@ char* loadstr(FILE* students){
     return str;
 }
 
+void list_entries(student_t* entries, int nr_entries){
+        int i;
+        for(i = 0; i < nr_entries; i++){
+            student_t student = entries[i];
+            printf("[Entry #%d]\n\tstudent_id=%d\n\tNIF=%s\n\tfirst_name=%s\n\tlast_name=%s\n",
+            i, student.id, student.NIF, student.first_name, student.last_name);
+        }
+}
+
+void filter(int nr_entries, int nr_args, int* nr_new, student_t* list, student_t* students, FILE* file){
+    for(int i = 0; i< nr_args; i++){
+        int found = 0;
+        for(int j = 0; j < nr_entries; j++){
+            if(list[i].id == students[j].id){
+                found = 1;
+                printf("Found duplicate student_id %d\n", list[i].id);
+            }
+        }
+        if(found == 0){
+            dump_entries(&list[i], 1, file);
+            (*nr_new)++;
+        }
+    }
+}
+
+int make_query(int type, student_t* students, int nr_entries, char* arg){
+    int found = 0;
+    int i = 0;
+    int id;
+    while(i < nr_entries && found == 0){
+        switch(type){
+            case 1:
+                id = atoi(arg);
+                if(students[i].id == id){
+                    found = 1;
+                    return i;
+                }
+                break;
+            case 2:
+                if(strcmp(students[i].NIF, arg) == 0){
+                    found = 1;
+                    return i;
+                }
+                break;
+            default:
+                break;
+        }
+        ++i;
+    }
+    return -1;
+}
+
 int main(int argc, char** argv){
     char c;
     FILE* file = NULL;
     int nr_entries;
-    student_t* students = malloc(sizeof(student_t)*argc);
-    char* pathname;
+    student_t* students;
+    char pathname[10000];
     char** buf;
-    while((c = getopt(argc, argv, "q:i:n:c:a:f:hl")) != -1){
+    int query = 0;
+    char* queryarg = "1";
+    int querytype = 0;
+    while((c = getopt(argc, argv, "hlqi:n:c:a:f:")) != -1){
         switch(c){
             case 'h':
                 fprintf(stderr, "Usage: ./student-records -f file [ -h | -l | -c | -a | -q [ -i|-n ID] ]  [ list of records ]\n");
                 break;
             case 'f':
-                pathname = optarg;
+                strcpy(pathname, optarg);
                 break;
             case 'l':
                 if((file = fopen(pathname, "rb")) == NULL){
                     return -1;
                 }
                 students = read_student_file(file, &nr_entries);
-                int i;
-                for(i = 0; i < nr_entries; i++){
-                    student_t s = students[i];
-                    printf("[Entry #%d]\n\tstudent_id=%d\n\tNIF=%s\n\tfirst_name=%s\n\tlast_name=%s\n",
-                            i, s.id, s.NIF, s.first_name, s.last_name);
-                }
+                list_entries(students, nr_entries);
+                fclose(file);
                 break;
             case 'c':
                 if((file= fopen(pathname, "wb+")) == NULL){
                     return -1;
                 }
                 nr_entries = argc - optind + 1;
-                buf = malloc(sizeof(char*) * nr_entries); 
+                buf = (char**) malloc(sizeof(char*) * nr_entries); 
                 for(int i = 0; i < nr_entries; i++){
                     buf[i] = argv[optind-1+i];
                 }
@@ -105,6 +156,7 @@ int main(int argc, char** argv){
                 printf("%d records written succesfully\n", nr_entries);
                 fwrite(&nr_entries, sizeof(int), 1, file);
                 dump_entries(students, nr_entries, file);
+                fclose(file);
                 break;
             case 'a':
                 if((file = fopen(pathname, "rb+")) == NULL){
@@ -112,44 +164,52 @@ int main(int argc, char** argv){
                 }
                 students = read_student_file(file, &nr_entries);
                 int nr_args = argc - optind + 1;
-                buf = malloc(sizeof(char*) * nr_args);
+                buf = (char**) malloc(sizeof(char*) * nr_args);
                 for(int i = 0; i < nr_args; i++){
                     buf[i] = argv[optind - 1 + i];
                 }
                 student_t* list = parse_records(buf, nr_args);
                 free(buf);
                 int nr_new = 0;
-                for(int i = 0; i<nr_args; i++){
-                    int found = 0;
-                    for(int j = 0; j < nr_entries; j++){
-                        if(list[i].id == students[j].id){
-                            found = 1;
-                            printf("Found duplicate student_id %d\n", list[i].id);
-                        }
-                    }
-                    if(found == 0){
-                        dump_entries(&list[i], 1, file);
-                        nr_new++;
-                    }
-                }
+                filter(nr_entries, nr_args, &nr_new, list, students, file);
                 if(fseek(file, sizeof(int), SEEK_SET) == -1){
                     perror("Error:");
                     return -1;
                 }
-                
                 nr_entries+=nr_new;
-                fseek(file,0,SEEK_END); 
-                rewind(file);
+                fseek(file,0,SEEK_SET); 
                 fwrite(&nr_entries, sizeof(int), 1, file);
+                printf("%d extra records written\n", nr_new);
+                fclose(file);
+                break;
+            case 'q':
+                query = 1;
+                break;
+            case 'i':
+                querytype = 1;
+                queryarg = optarg;
+                break;
+            case 'n':
+                querytype = 2;
+                queryarg = optarg;
                 break;
             default:
                 break;
         }     
+        
     }
+    if(query == 1){
+         file = fopen(pathname, "rb");
+         students = read_student_file(file, &nr_entries);
+         int entry = make_query(querytype, students, nr_entries, queryarg);
+         if(entry != -1){
+             list_entries(&students[entry], 1);
+         }
+        fclose(file);
+     }
+    //if(file!=NULL) fclose(file);
     
-    if(file!=NULL) fclose(file);
-    
-    if(students != NULL) free(students);
+    //if(students != NULL) free(students);
    
     return 0;
 }
