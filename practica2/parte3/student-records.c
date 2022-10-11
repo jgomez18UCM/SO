@@ -107,7 +107,7 @@ int main(int argc, char** argv){
                 dump_entries(students, nr_entries, file);
                 break;
             case 'a':
-                if((file = fopen(pathname, "ab+")) == NULL){
+                if((file = fopen(pathname, "rb+")) == NULL){
                     return -1;
                 }
                 students = read_student_file(file, &nr_entries);
@@ -116,6 +116,31 @@ int main(int argc, char** argv){
                 for(int i = 0; i < nr_args; i++){
                     buf[i] = argv[optind - 1 + i];
                 }
+                student_t* list = parse_records(buf, nr_args);
+                free(buf);
+                int nr_new = 0;
+                for(int i = 0; i<nr_args; i++){
+                    int found = 0;
+                    for(int j = 0; j < nr_entries; j++){
+                        if(list[i].id == students[j].id){
+                            found = 1;
+                            printf("Found duplicate student_id %d\n", list[i].id);
+                        }
+                    }
+                    if(found == 0){
+                        dump_entries(&list[i], 1, file);
+                        nr_new++;
+                    }
+                }
+                if(fseek(file, sizeof(int), SEEK_SET) == -1){
+                    perror("Error:");
+                    return -1;
+                }
+                
+                nr_entries+=nr_new;
+                fseek(file,0,SEEK_END); 
+                rewind(file);
+                fwrite(&nr_entries, sizeof(int), 1, file);
                 break;
             default:
                 break;
