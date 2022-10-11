@@ -14,6 +14,7 @@
     read_student_file
     loadstr
 */
+char* loadstr(FILE* students);
 
 student_t* parse_records(char* records[], int nr_records){
     student_t* students = malloc(sizeof(student_t) * nr_records);
@@ -38,12 +39,33 @@ int dump_entries(student_t* entries, int nr_entries, FILE* students){
 
 student_t* read_student_file(FILE* students, int* nr_entries){
     fseek(students, 0, SEEK_SET);
-
-    return NULL;
+    fread(nr_entries, sizeof(int), 1, students);
+    student_t* studet_list = malloc(sizeof(student_t)*(*nr_entries));
+    for(int i = 0; i < *nr_entries; i++){
+        fread(&studet_list[i].id, sizeof(int), 1, students);
+        
+        fread(studet_list[i].NIF, sizeof(char), MAX_CHARACTERS_NIF+1, students);
+        
+        studet_list[i].first_name = loadstr(students); 
+        studet_list[i].last_name = loadstr(students); 
+       
+    }
+    return studet_list;
 }
 
 char* loadstr(FILE* students){
-    return "\0";
+    char c;
+    int len = 1;
+    fread(&c, sizeof(char), 1, students); 
+    while(c!='\0'){
+        ++len;
+        fread(&c, sizeof(char), 1, students);
+    }
+    char * str = malloc(sizeof(char)*len);
+    fseek(students, -len, SEEK_CUR);
+    int i;
+    for(i = 0; i < len; i++) fread(&str[i], sizeof(char), 1, students);
+    return str;
 }
 
 int main(int argc, char** argv){
@@ -52,7 +74,7 @@ int main(int argc, char** argv){
     int nr_entries;
     student_t* students = malloc(sizeof(student_t)*argc);
     char* pathname;
-    while((c = getopt(argc, argv, "hl:q:i:n:c:a:l:f:")) != -1){
+    while((c = getopt(argc, argv, "q:i:n:c:a:f:hl")) != -1){
         switch(c){
             case 'h':
                 fprintf(stderr, "Usage: ./student-records -f file [ -h | -l | -c | -a | -q [ -i|-n ID] ]  [ list of records ]\n");
@@ -61,7 +83,7 @@ int main(int argc, char** argv){
                 pathname = optarg;
                 break;
             case 'l':
-                if(file == NULL){
+                if((file = fopen(pathname, "rb")) == NULL){
                     return -1;
                 }
                 students = read_student_file(file, &nr_entries);
@@ -73,7 +95,7 @@ int main(int argc, char** argv){
                 }
                 break;
             case 'c':
-                if((file= fopen(pathname, "w+")) == NULL){
+                if((file= fopen(pathname, "wb+")) == NULL){
                     return -1;
                 }
                 nr_entries = argc - optind + 1;
@@ -83,8 +105,9 @@ int main(int argc, char** argv){
                 }
                 students = parse_records(buf, nr_entries);
                 free(buf);
+                printf("%d records written succesfully\n", nr_entries);
+                fwrite(&nr_entries, sizeof(int), 1, file);
                 dump_entries(students, nr_entries, file);
-                
                 break;
             default:
                 break;
