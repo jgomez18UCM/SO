@@ -6,13 +6,9 @@
 /*
     TO DO:
     -a
-    -l
     -q
         -i
         -n
-
-    read_student_file
-    loadstr
 */
 char* loadstr(FILE* students);
 
@@ -74,6 +70,7 @@ int main(int argc, char** argv){
     int nr_entries;
     student_t* students = malloc(sizeof(student_t)*argc);
     char* pathname;
+    char** buf;
     while((c = getopt(argc, argv, "q:i:n:c:a:f:hl")) != -1){
         switch(c){
             case 'h':
@@ -99,7 +96,7 @@ int main(int argc, char** argv){
                     return -1;
                 }
                 nr_entries = argc - optind + 1;
-                char** buf = malloc(sizeof(char*) * nr_entries); 
+                buf = malloc(sizeof(char*) * nr_entries); 
                 for(int i = 0; i < nr_entries; i++){
                     buf[i] = argv[optind-1+i];
                 }
@@ -108,6 +105,17 @@ int main(int argc, char** argv){
                 printf("%d records written succesfully\n", nr_entries);
                 fwrite(&nr_entries, sizeof(int), 1, file);
                 dump_entries(students, nr_entries, file);
+                break;
+            case 'a':
+                if((file = fopen(pathname, "ab+")) == NULL){
+                    return -1;
+                }
+                students = read_student_file(file, &nr_entries);
+                int nr_args = argc - optind + 1;
+                buf = malloc(sizeof(char*) * nr_args);
+                for(int i = 0; i < nr_args; i++){
+                    buf[i] = argv[optind - 1 + i];
+                }
                 break;
             default:
                 break;
