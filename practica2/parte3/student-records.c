@@ -5,10 +5,8 @@
 #include "defs.h"
 /*
     TO DO:
-    -a
-    -q
-        -i
-        -n
+        Preguntar por queries encadenadas y varios argumentos con -c o -a
+        
 */
 //Forward declarations.
 char* loadstr(FILE* students);
@@ -29,7 +27,7 @@ student_t* parse_records(char* records[], int nr_records){
 int dump_entries(student_t* entries, int nr_entries, FILE* students){
     for(int i = 0; i < nr_entries; i++){
         fwrite(&entries[i].id, sizeof(int), 1, students);
-        fwrite(&entries[i].NIF, strlen(entries[i].NIF)+1, 1, students);
+        fwrite(entries[i].NIF, strlen(entries[i].NIF)+1, 1, students);
         fwrite(entries[i].first_name, strlen(entries[i].first_name)+1, 1, students);
         fwrite(entries[i].last_name, strlen(entries[i].last_name)+1, 1, students);
     }
@@ -66,12 +64,12 @@ char* loadstr(FILE* students){
     char * str = malloc(sizeof(char)*len);
     fseek(students, -len, SEEK_CUR);
     int i;
-    for(i = 0; i < len; i++) fread(&str[i], sizeof(char), 1, students);
+    fread(str, sizeof(char), len, students);
     return str;
 }
 
-//Este metodo imprime nr_entries del array entries en pantalla, en el formato 
-/*
+/*Este metodo imprime nr_entries del array entries en pantalla, en el formato 
+
     [Entry #n]
         id=[ID]
         NIF=[NIF]
@@ -107,20 +105,20 @@ void filter(int nr_entries, int nr_args, int* nr_new, student_t* list, student_t
 
 //Este metodo realiza una busqueda por id (tipo 1), o por NIF (tipo 2) en el array students, de tamaño nr_entries, segun el argumento arg.
 //Devuelve el indice de dicha entrada, en caso de que no exista, devuelve -1.
-int make_query(int type, student_t* students, int nr_entries, char* arg){
+int make_query(query_t type, student_t* students, int nr_entries, char* arg){
     int found = 0;
     int i = 0;
     int id;
     while(i < nr_entries && found == 0){
         switch(type){
-            case 1:
+            case Q_ID:
                 id = atoi(arg);
                 if(students[i].id == id){
                     found = 1;
                     return i;
                 }
                 break;
-            case 2:
+            case Q_NIF:
                 if(strcmp(students[i].NIF, arg) == 0){
                     found = 1;
                     return i;
@@ -142,8 +140,8 @@ int main(int argc, char** argv){
     char pathname[10000];
     char** buf;
     int query = 0;
-    char* queryarg = "1";
-    int querytype = 0;
+    char* queryarg = "";
+    query_t querytype = Q_NONE;
 
     while((c = getopt(argc, argv, "hlqi:n:c:a:f:")) != -1){
         switch(c){
@@ -169,15 +167,15 @@ int main(int argc, char** argv){
                 nr_entries = argc - optind + 1;
                 buf = (char**) malloc(sizeof(char*) * nr_entries); 
                 for(int i = 0; i < nr_entries; i++){
-                    buf[i] = argv[optind-1+i];
+                    buf[i] = strdup(argv[optind-1+i]);
                 }
                 students = parse_records(buf, nr_entries);
-                free(buf);
                 printf("%d records written succesfully\n", nr_entries);
                 fwrite(&nr_entries, sizeof(int), 1, file);
                 dump_entries(students, nr_entries, file);
                 fclose(file);
                 free(students);
+                free(buf);
                 break;
             case 'a':
                 if((file = fopen(pathname, "rb+")) == NULL){
@@ -187,51 +185,54 @@ int main(int argc, char** argv){
                 int nr_args = argc - optind + 1;
                 buf = (char**) malloc(sizeof(char*) * nr_args);
                 for(int i = 0; i < nr_args; i++){
-                    buf[i] = argv[optind - 1 + i];
+                    buf[i] = strdup(argv[optind - 1 + i]);
                 }
                 student_t* list = parse_records(buf, nr_args);
-                free(buf);
                 int nr_new = 0;
                 filter(nr_entries, nr_args, &nr_new, list, students, file);
-                if(fseek(file, sizeof(int), SEEK_SET) == -1){
-                    perror("Error:");
-                    return -1;
-                }
                 nr_entries+=nr_new;
                 fseek(file,0,SEEK_SET); 
                 fwrite(&nr_entries, sizeof(int), 1, file);
                 printf("%d extra records written\n", nr_new);
                 fclose(file);
                 free(students);
+                free(buf);
                 break;
             case 'q':
                 query = 1;
                 break;
             case 'i':
-                querytype = 1;
-                queryarg = optarg;
+                querytype = Q_ID;
+                queryarg = strdup(optarg);
                 break;
             case 'n':
-                querytype = 2;
-                queryarg = optarg;
+                querytype = Q_NONE;
+                queryarg = strdup(optarg);
                 break;
             default:
                 break;
-        }     
+        }    
+        if(query == 1 && querytype != Q_NONE){
+            file = fopen(pathname, "rb");
+            students = read_student_file(file, &nr_entries);
+            int entry = make_query(querytype, students, nr_entries, queryarg);
+            if(entry != -1){
+                student_t student = students[entry];
+                printf("[Entry #%d]\n\tstudent_id=%d\n\tNIF=%s\n\tfirst_name=%s\n\tlast_name=%s\n",
+                entry, student.id, student.NIF, student.first_name, student.last_name);
+                free(students);
+                fclose(file);
+            }else{
+                printf("No entries found\n");
+                free(students);
+                fclose(file);
+            }
+            query = 0;
+            querytype = 0;
+        }    
         
     }
 
-    if(query == 1){
-        file = fopen(pathname, "rb");
-        students = read_student_file(file, &nr_entries);
-        int entry = make_query(querytype, students, nr_entries, queryarg);
-        if(entry != -1){
-            student_t student = students[entry];
-            printf("[Entry #%d]\n\tstudent_id=%d\n\tNIF=%s\n\tfirst_name=%s\n\tlast_name=%s\n",
-            entry, student.id, student.NIF, student.first_name, student.last_name);
-        }
-        free(students);
-        fclose(file);
-    }   
+   
     return 0;
 }

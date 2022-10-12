@@ -6,3 +6,7 @@ typedef struct{
     char* first_name;
     char* last_name;
 } student_t;
+
+typedef enum {
+    Q_NONE, Q_ID, Q_NIF
+} query_t;
