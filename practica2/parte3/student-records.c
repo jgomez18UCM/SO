@@ -142,7 +142,8 @@ int main(int argc, char** argv){
     int query = 0;
     char* queryarg = "";
     query_t querytype = Q_NONE;
-
+    char p;
+    int i;
     while((c = getopt(argc, argv, "hlqi:n:c:a:f:")) != -1){
         switch(c){
             case 'h':
@@ -165,8 +166,14 @@ int main(int argc, char** argv){
                     return -1;
                 }
                 nr_entries = argc - optind + 1;
+                i = 0;
+                do{
+                    p = argv[optind-1+i][0];
+                    if(p != '-') ++i;
+                }while(i < nr_entries && p!='-');
+                nr_entries = i;
                 buf = (char**) malloc(sizeof(char*) * nr_entries); 
-                for(int i = 0; i < nr_entries; i++){
+                for(i = 0; i < nr_entries; i++){
                     buf[i] = strdup(argv[optind-1+i]);
                 }
                 students = parse_records(buf, nr_entries);
@@ -183,8 +190,14 @@ int main(int argc, char** argv){
                 }
                 students = read_student_file(file, &nr_entries);
                 int nr_args = argc - optind + 1;
+                i = 0;
+                do{
+                    p = argv[optind-1+i][0];
+                    if(p != '-') ++i;
+                }while(i < nr_args && p!='-');
+                nr_args = i;
                 buf = (char**) malloc(sizeof(char*) * nr_args);
-                for(int i = 0; i < nr_args; i++){
+                for(i = 0; i < nr_args; i++){
                     buf[i] = strdup(argv[optind - 1 + i]);
                 }
                 student_t* list = parse_records(buf, nr_args);
@@ -206,7 +219,7 @@ int main(int argc, char** argv){
                 queryarg = strdup(optarg);
                 break;
             case 'n':
-                querytype = Q_NONE;
+                querytype = Q_NIF;
                 queryarg = strdup(optarg);
                 break;
             default:
