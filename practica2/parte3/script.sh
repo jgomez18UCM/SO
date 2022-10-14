@@ -1,6 +1,5 @@
 #!/usr/bin/bash
 
-#!/bin/bash
 
 if ! ls | grep  -q student-records$;then 
     echo "El archivo student-records no existe"

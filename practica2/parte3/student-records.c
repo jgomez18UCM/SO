@@ -130,6 +130,20 @@ int make_query(query_t type, student_t* students, int nr_entries, char* arg){
     return -1;
 }
 
+void cp_args(char** argv, int * nr_args, char** buf){
+    char p;
+    int i = 0;
+    do{
+        p = argv[optind-1+i][0];
+        if(p != '-') ++i;
+    }while(i < *nr_args && p!='-');
+    *nr_args = i;
+    buf = (char**) malloc(sizeof(char*) * *nr_args);
+    for(i = 0; i < *nr_args; i++){
+        buf[i] = strdup(argv[optind - 1 + i]);
+    }
+}
+
 int main(int argc, char** argv){
     char c;
     FILE* file = NULL;
@@ -164,16 +178,7 @@ int main(int argc, char** argv){
                     return -1;
                 }
                 nr_entries = argc - optind + 1;
-                i = 0;
-                do{
-                    p = argv[optind-1+i][0];
-                    if(p != '-') ++i;
-                }while(i < nr_entries && p!='-');
-                nr_entries = i;
-                buf = (char**) malloc(sizeof(char*) * nr_entries); 
-                for(i = 0; i < nr_entries; i++){
-                    buf[i] = strdup(argv[optind-1+i]);
-                }
+                cp_args(argv, &nr_entries, buf);
                 students = parse_records(buf, nr_entries);
                 printf("%d records written succesfully\n", nr_entries);
                 fwrite(&nr_entries, sizeof(int), 1, file);
@@ -188,16 +193,7 @@ int main(int argc, char** argv){
                 }
                 students = read_student_file(file, &nr_entries);
                 int nr_args = argc - optind + 1;
-                i = 0;
-                do{
-                    p = argv[optind-1+i][0];
-                    if(p != '-') ++i;
-                }while(i < nr_args && p!='-');
-                nr_args = i;
-                buf = (char**) malloc(sizeof(char*) * nr_args);
-                for(i = 0; i < nr_args; i++){
-                    buf[i] = strdup(argv[optind - 1 + i]);
-                }
+                cp_args(argv, &nr_args, buf);
                 student_t* list = parse_records(buf, nr_args);
                 int nr_new = 0;
                 filter(nr_entries, nr_args, &nr_new, list, students, file);
