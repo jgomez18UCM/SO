@@ -1,3 +1,5 @@
+#!/usr/bin/bash
+
 #!/bin/bash
 
 if ! ls | grep  -q student-records$;then 
@@ -27,6 +29,8 @@ echo "$recs"
 #En las iteraciones restantes se añadirán los demás registros uno 
 #a uno al fichero database utilizando la opción -a.
 
+rm database
+
 for i in $recs; do
     if ! test -f database; then
     ./student-records -f database -c $i
@@ -35,7 +39,7 @@ for i in $recs; do
     fi
 done
 
-# :'El script mostrará el contenido del fichero databases de dos formas:
+#  'El script mostrará el contenido del fichero databases de dos formas:
 #  usando la opción -l de student-records y empleando el programa xxd,
 #   que simplemente realizará un volcado binario del fichero.'
 
@@ -49,7 +53,6 @@ xxd database
 # student-records con las opciones -q -n. Para extraer el NIF de 
 # cada estudiante del registro en formato ASCII correspondiente
 # se usará el comando cut y un pipe (consultar página de manual de cut ).
-
 for i in $recs; do
 ./student-records -f database -qn $(cut -d':' -f2 <<< $i)
 done
