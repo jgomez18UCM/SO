@@ -1,0 +1,20 @@
+#!/bin/bash
+
+if ! ls | grep  -q student-records$;then 
+    echo "El archivo student-records no existe"
+    exit
+elif ! test -x ./student-records;then
+        echo "El archivo no es ejecutable, el programa terminara"
+        exit
+fi
+
+if ! ls | grep -q records.txt;then
+    echo "El archivo records.txt no existe"
+    exit
+elif  ! test "$(stat --format "%F" records.txt)" = "fichero regular" ; then
+    echo "El archivo records.txt no es un fichero regular"
+    exit
+fi
+
+recs="$(cat records.txt | tr '\n' ' ')"
+echo "$recs" 
