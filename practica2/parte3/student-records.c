@@ -42,9 +42,7 @@ student_t* read_student_file(FILE* students, int* nr_entries){
     student_t* studet_list = (student_t*) malloc(sizeof(student_t)*(*nr_entries));
     for(int i = 0; i < *nr_entries; i++){
         fread(&studet_list[i].id, sizeof(int), 1, students);
-        
-        fread(studet_list[i].NIF, sizeof(char), MAX_CHARACTERS_NIF+1, students);
-        
+        strcpy(studet_list[i].NIF, loadstr(students));
         studet_list[i].first_name = loadstr(students); 
         studet_list[i].last_name = loadstr(students); 
        

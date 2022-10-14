@@ -26,6 +26,9 @@ echo "$recs"
 #student-records con el primer registro del fichero y la opción -c.
 #En las iteraciones restantes se añadirán los demás registros uno 
 #a uno al fichero database utilizando la opción -a.
+if test -f database; then
+ rm database
+fi
 
 for i in $recs; do
     if ! test -f database; then
