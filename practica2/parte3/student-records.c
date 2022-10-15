@@ -38,6 +38,7 @@ int dump_entries(student_t* entries, int nr_entries, FILE* students){
 //nr_entries el numero de entradas recogidas.
 student_t* read_student_file(FILE* students, int* nr_entries){
     fseek(students, 0, SEEK_SET);
+    *nr_entries = 0;
     fread(nr_entries, sizeof(int), 1, students);
     student_t* studet_list = (student_t*) malloc(sizeof(student_t)*(*nr_entries));
     for(int i = 0; i < *nr_entries; i++){
@@ -129,7 +130,7 @@ int make_query(query_t type, student_t* students, int nr_entries, char* arg){
     return -1;
 }
 
-void cp_args(char** argv, int * nr_args, char*** buf){
+char** cp_args(char** argv, int * nr_args){
     char p;
     int i = 0;
     do{
@@ -137,17 +138,18 @@ void cp_args(char** argv, int * nr_args, char*** buf){
         if(p != '-') ++i;
     }while(i < (*nr_args) && p!='-');
     *nr_args = i;
-    *buf = realloc(*buf,sizeof(char*) * (*nr_args));
+    char ** buf = malloc(sizeof(char*) * (*nr_args));
     for(i = 0; i < (*nr_args); i++){
-        (*buf)[i] = strdup(argv[optind - 1 + i]);
+        buf[i] = strdup(argv[optind - 1 + i]);
     }
+    return buf;
 }
 
 int main(int argc, char** argv){
     char c;
     FILE* file = NULL;
     int nr_entries;
-    student_t* students;
+    student_t* students = NULL;
     char pathname[10000];
     char** buf = NULL;
     int query = 0;
@@ -175,7 +177,7 @@ int main(int argc, char** argv){
                     return -1;
                 }
                 nr_entries = argc - optind + 1;
-                cp_args(argv, &nr_entries, &buf);
+                buf = cp_args(argv, &nr_entries);
                 students = parse_records(buf, nr_entries);
                 printf("%d records written succesfully\n", nr_entries);
                 fwrite(&nr_entries, sizeof(int), 1, file);
@@ -190,7 +192,7 @@ int main(int argc, char** argv){
                 }
                 students = read_student_file(file, &nr_entries);
                 int nr_args = argc - optind + 1;
-                cp_args(argv, &nr_args, &buf);
+                buf = cp_args(argv, &nr_args);
                 student_t* list = parse_records(buf, nr_args);
                 int nr_new = 0;
                 filter(nr_entries, nr_args, &nr_new, list, students, file);
@@ -217,7 +219,9 @@ int main(int argc, char** argv){
                 break;
         }    
         if(query == 1 && querytype != Q_NONE){
-            file = fopen(pathname, "rb");
+            if((file = fopen(pathname, "rb")) == -1){
+                return -1;
+            }
             students = read_student_file(file, &nr_entries);
             int entry = make_query(querytype, students, nr_entries, queryarg);
             if(entry != -1){
@@ -233,10 +237,7 @@ int main(int argc, char** argv){
             }
             query = 0;
             querytype = 0;
-        }    
-        
+        }           
     }
-
-   
     return 0;
 }
