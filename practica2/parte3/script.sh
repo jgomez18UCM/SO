@@ -18,7 +18,6 @@ elif  ! test "$(stat --format "%F" records.txt)" = "fichero regular" ; then
 fi
 
 recs="$(cat records.txt | tr '\n' ' ')"
-echo "$recs" 
 
 #Acto seguido, el script recorrerá con un bucle for todos
 #los registros en formato ASCII almacenados en la variable records.
