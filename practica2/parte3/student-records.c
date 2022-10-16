@@ -38,7 +38,6 @@ int dump_entries(student_t* entries, int nr_entries, FILE* students){
 //nr_entries el numero de entradas recogidas.
 student_t* read_student_file(FILE* students, int* nr_entries){
     fseek(students, 0, SEEK_SET);
-    *nr_entries = 0;
     fread(nr_entries, sizeof(int), 1, students);
     student_t* studet_list = (student_t*) malloc(sizeof(student_t)*(*nr_entries));
     for(int i = 0; i < *nr_entries; i++){
@@ -219,7 +218,7 @@ int main(int argc, char** argv){
                 break;
         }    
         if(query == 1 && querytype != Q_NONE){
-            if((file = fopen(pathname, "rb")) == -1){
+            if((file = fopen(pathname, "rb")) == NULL){
                 return -1;
             }
             students = read_student_file(file, &nr_entries);
