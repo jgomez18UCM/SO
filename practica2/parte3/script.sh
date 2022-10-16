@@ -31,9 +31,9 @@ rm database
 
 for i in $recs; do
     if ! test -f database; then
-    ./student-records -f database -c $i
+    ./student-records -f database -c $i || exit 1
     else
-    ./student-records -f database -a $i
+    ./student-records -f database -a $i || exit 1
     fi
 done
 
@@ -41,7 +41,7 @@ done
 #  usando la opción -l de student-records y empleando el programa xxd,
 #   que simplemente realizará un volcado binario del fichero.'
 
-./student-records -f database -l
+./student-records -f database -l  || exit 1
 xxd database
 
 # Finalmente, se utilizará otro bucle para recorrer de nuevo todos los registros
@@ -52,5 +52,5 @@ xxd database
 # cada estudiante del registro en formato ASCII correspondiente
 # se usará el comando cut y un pipe (consultar página de manual de cut ).
 for i in $recs; do
-./student-records -f database -qn $(cut -d':' -f2 <<< $i)
+./student-records -f database -qn $(cut -d':' -f2 <<< $i)  || exit 1
 done
