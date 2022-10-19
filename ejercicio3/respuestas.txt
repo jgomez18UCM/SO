@@ -1,0 +1,9 @@
+Pregunta 1
+    El motivo por el que hay que implementar clone_string 
+    es porque strcpy necesita un array con un tamaño lo suficientemente grande como
+    para que entre el string entero. strdup(), por ejemplo, devuelve un puntero a un string
+    duplicado de la fuente, y aloja la suficiente memoria automáticamente.
+Pregunta 2
+    strsep corta desde el inicio string hasta que llega el delimitador, y lo pega a token. Cuando
+    vuelve a invocarse, quita el delimitador del string y vuelve a hacer el proceso. line como tal no sufre modificaciones
+    en cada llamada de strsep, porque se copia su valor a lineptr, donde se hace el proceso. 
