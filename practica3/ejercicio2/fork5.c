@@ -11,6 +11,7 @@
 int main(int argc, char **argv)
 {
 	pid_t pid1 = fork();
+	
 	if(pid1 == 0){
 		execlp("echo", "echo", "P1", NULL);
 	}
@@ -49,7 +50,8 @@ int main(int argc, char **argv)
 		execl("/bin/echo", "/bin/echo", "P4", NULL);
 	} 
 
-	while(waitpid(pid4, NULL, 0) != -1 && waitpid(pid5, NULL, 0) != -1);
+	while(waitpid(pid4, NULL, 0) != -1); 
+	while(waitpid(pid5, NULL, 0) != -1);
 
 	pid_t pid6 = fork();
 
@@ -57,8 +59,10 @@ int main(int argc, char **argv)
 		execl("/bin/echo", "/bin/echo", "P6", NULL);
 	} 
 
-	while(waitpid(pid6,NULL,0) != -1 && waitpid(pid3,NULL,0) != -1 && waitpid(pid7,NULL,0) != -1);
-	
+	while (waitpid(pid6,NULL,0) != -1);
+	while (waitpid(pid3,NULL,0) != -1);
+	while (waitpid(pid7,NULL,0) != -1);
+
 	pid_t pid8 = fork();
 
 	if(pid8 == 0){

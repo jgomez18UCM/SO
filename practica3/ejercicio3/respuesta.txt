@@ -1,0 +1,2 @@
+Se escriben los datos de todos los hilos como si fueran el ultimo de todos.
+Esto pasa porque el padre termina primero y va cambiando la direccion de memoria del argumento.
