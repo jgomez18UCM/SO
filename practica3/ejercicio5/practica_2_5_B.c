@@ -13,17 +13,20 @@ int main(void)
     char buffer[6];
 
     fd1 = open("output.txt", O_CREAT | O_TRUNC | O_RDWR, S_IRUSR | S_IWUSR);
-    write(fd1, "00000", 5);
+    
     for (i=1; i < 10; i++) {
         //pos = lseek(fd1, 0, SEEK_CUR);
         if (fork() == 0) {
             /* Child */
-            fd2 = open("output.txt", O_RDWR, 0);
+            fd2 = open("output.txt", O_RDWR);
             sprintf(buffer, "%d", i*11111);
-            lseek(fd2, i*5, SEEK_SET);
+            lseek(fd2, 5+10*(i-1), SEEK_SET);
             write(fd2, buffer, 5);
             close(fd2);
             exit(0);
+        }else{
+            lseek(fd1, (i-1)*10, SEEK_SET);
+            write(fd1, "00000", 5);
         } 
     }
 
