@@ -14,7 +14,7 @@ void *thread_usuario(void *arg)
 {
 	usuario_t* copia = (usuario_t*) arg;
 	usuario_t us = {copia->id, copia->priority};
-	//free(arg);
+	free(arg);
 	printf("Mi id es %ld, con numero de usuario %d, y prioridad %c\n", pthread_self(), us.id, us.priority);
 	return NULL;
 }
