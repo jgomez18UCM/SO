@@ -24,6 +24,9 @@ int main(int argc, char **argv)
 		accion.sa_handler = &func;
 		alarm(5);
 		sigaction(SIGALRM, &accion, NULL);
+		struct sigaction ignorar;
+		ignorar.sa_handler = SIG_IGN;
+		sigaction(SIGINT, &ignorar, NULL);
 	}
 
 	int status;
