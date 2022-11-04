@@ -14,9 +14,7 @@ int mesa[3] = {0};
 pthread_mutex_t m;
 pthread_cond_t vc_fumador, vc_agente;
 
-void fumar(){
-    for(int i = 0; i < 100; i++);
-}
+
 void* Fumador(void* arg){
     int ing = *((int *) arg);
     int ing1 = (ing+1)%3;
@@ -40,7 +38,7 @@ void* Agente(void* arg){
         int ing1 = rand() % 3;
         int ing2 = (ing1 + (rand()%2+1)) % 3;
         pthread_mutex_lock(&m);
-        while(mesa[TABACO] != 0 && mesa[PAPEL] != 0 && mesa[CERILLA] != 0){
+        while(mesa[TABACO] != 0 || mesa[PAPEL] != 0 || mesa[CERILLA] != 0){
             pthread_cond_wait(&vc_agente, &m);
         }
         mesa[ing1] = 1;
