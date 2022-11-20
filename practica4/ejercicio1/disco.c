@@ -3,7 +3,7 @@
 #include <unistd.h>
 #include <pthread.h>
 
-#define CAPACITY 5
+#define CAPACITY 2
 #define VIPSTR(vip) ((vip) ? "  vip  " : "not vip")
 
 typedef struct {
@@ -27,18 +27,38 @@ int aforo = CAPACITY;
 
 void enter_normal_client(int id)
 {
+	
 	pthread_mutex_lock(&m);
-	int mTicket = ticketVip;
-	++ticketVip;
-	usuariosVip++;
-	while(aforo == 0 || turnoVip != mTicket);
-
+	int mTicket = ticketNormal;
+	++ticketNormal;
+	printf("Cliente normal con id %d esperando\n", id);
+	while(usuariosVip != 0 || aforo == 0 || turnoNormal != mTicket){
+		pthread_cond_wait(&cola, &m);
+	}
+	printf("Cliente normal con id %d entrando\n", id);
+	--aforo;
+	++turnoNormal;
+	pthread_cond_broadcast(&cola);
+	pthread_mutex_unlock(&m);	
 
 }
 
 void enter_vip_client(int id)
 {
-
+	pthread_mutex_lock(&m);
+	int mTicket = ticketVip;
+	++ticketVip;
+	++usuariosVip;
+	printf("Cliente vip con id %d esperando\n", id);
+	while(aforo == 0 || turnoVip != mTicket){
+		pthread_cond_wait(&cola, &m);
+	}
+	printf("Cliente vip con id %d entrando\n", id);
+	--aforo;
+	++turnoVip;
+	--usuariosVip;
+	pthread_cond_broadcast(&cola);
+	pthread_mutex_unlock(&m);
 }
 
 void dance(int id, int isvip)
@@ -49,7 +69,11 @@ void dance(int id, int isvip)
 
 void disco_exit(int id, int isvip)
 {
-
+	pthread_mutex_lock(&m);
+	++aforo;
+	printf("Cliente %s con id %d saliendo.\n", VIPSTR(isvip), id);
+	pthread_cond_broadcast(&cola);
+	pthread_mutex_unlock(&m);
 }
 
 void *client(void *arg)
@@ -60,7 +84,7 @@ void *client(void *arg)
 		enter_vip_client(cliente.id);
 		
 	}else{
-		enter_normal_client(cliente.vip);
+		enter_normal_client(cliente.id);
 	}
 	dance(cliente.id, cliente.vip);
 	disco_exit(cliente.id, cliente.vip);
@@ -87,9 +111,11 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 	fseek(file, 1, SEEK_CUR);
-	printf("%d\n",nClients);
+	
 	client_t clients[nClients];
 	pthread_t hilos[nClients];
+	pthread_mutex_init(&m, NULL);
+	pthread_cond_init(&cola, NULL);
 	for(int i = 0; i < nClients; i++){
 		fscanf(file,"%d",&clients[i].vip);
 		clients[i].id = i;
