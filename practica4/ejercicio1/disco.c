@@ -3,7 +3,7 @@
 #include <unistd.h>
 #include <pthread.h>
 
-#define CAPACITY 5
+#define CAPACITY 1
 #define VIPSTR(vip) ((vip) ? "  vip  " : "not vip")
 
 typedef struct {
@@ -27,18 +27,36 @@ int aforo = CAPACITY;
 
 void enter_normal_client(int id)
 {
+
 	pthread_mutex_lock(&m);
-	int mTicket = ticketVip;
-	++ticketVip;
-	usuariosVip++;
-	while(aforo == 0 || turnoVip != mTicket);
-
-
+	int mTicket = ticketNormal;
+	++ticketNormal;
+	
+	while(aforo == 0 || turnoNormal != mTicket || usuariosVip != 0)
+		pthread_cond_wait(&cola, &m);
+	
+	turnoNormal++;
+	aforo--;
+	printf("Client %2d (not vip) entering the disco\n", id);
+	pthread_cond_broadcast(&cola);
+	pthread_mutex_unlock(&m);
 }
 
 void enter_vip_client(int id)
 {
-
+	pthread_mutex_lock(&m);
+	int mTicket = ticketVip;
+	++ticketVip;
+	usuariosVip++;
+	while(aforo == 0 || turnoVip != mTicket)
+		pthread_cond_wait(&cola, &m);
+	
+	turnoVip++;
+	usuariosVip--;
+	aforo--;
+	printf("Client %2d (  vip  ) entering the disco\n", id);
+	pthread_cond_broadcast(&cola);
+	pthread_mutex_unlock(&m);
 }
 
 void dance(int id, int isvip)
@@ -49,7 +67,11 @@ void dance(int id, int isvip)
 
 void disco_exit(int id, int isvip)
 {
-
+	pthread_mutex_lock(&m);
+	printf("Client %2d (%s) is leaving the disco\n", id, VIPSTR(isvip));
+	aforo++;
+	pthread_cond_broadcast(&cola);
+	pthread_mutex_unlock(&m);
 }
 
 void *client(void *arg)
@@ -71,7 +93,7 @@ int main(int argc, char *argv[])
 {
 
 	if(argc < 2){
-		printf("Usage: ./disco file");
+		printf("Usage: ./disco file\n");
 		return -1;
 	}
 
