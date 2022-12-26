@@ -1,0 +1,1 @@
+cmd_/home/daniel/Documentos/GitHub/SO/practica5/Chardev/chardev.mod := { echo  /home/daniel/Documentos/GitHub/SO/practica5/Chardev/chardev.o;  echo; } > /home/daniel/Documentos/GitHub/SO/practica5/Chardev/chardev.mod

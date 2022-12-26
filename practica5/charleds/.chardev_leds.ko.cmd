@@ -1,0 +1,1 @@
+cmd_/home/daniel/Documentos/GitHub/SO/practica5/charleds/chardev_leds.ko := ld -r  -m elf_x86_64  --build-id=sha1  -T scripts/module.lds -o /home/daniel/Documentos/GitHub/SO/practica5/charleds/chardev_leds.ko /home/daniel/Documentos/GitHub/SO/practica5/charleds/chardev_leds.o /home/daniel/Documentos/GitHub/SO/practica5/charleds/chardev_leds.mod.o;  true
