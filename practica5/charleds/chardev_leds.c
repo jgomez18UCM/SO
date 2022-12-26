@@ -37,9 +37,9 @@ static inline int set_leds(struct tty_driver* handler, unsigned int mask);
 
 #define ALL_LEDS_ON 0x7
 #define ALL_LEDS_OFF 0
-#define LED_0 0x1
+#define LED_0 0x4
 #define LED_1 0x2
-#define LED_2 0x4
+#define LED_2 0x1
 
 
 
@@ -53,11 +53,7 @@ static dev_t start;
 static struct cdev* chardev=NULL;
 static int Device_Open = 0;	/* Is device open?
 				 * Used to prevent multiple access to device */
-static char msg[BUF_LEN];	/* The msg the device will give when asked */
-static char *msg_Ptr;		/* This will be initialized every time the
-				   device is opened successfully */
-static int counter=0;		/* Tracks the number of times the character
-				 * device has been opened */
+
 
 static struct file_operations fops = {
     .read = device_read,
@@ -114,7 +110,7 @@ int init_module(void)
     kbd_driver = get_kbd_driver_handler();
     
 
-
+    //set_leds(kbd_driver,ALL_LEDS_ON);
 
     return SUCCESS;
 }
@@ -131,6 +127,7 @@ void cleanup_module(void)
     /*
      * Unregister the device
      */
+    set_leds(kbd_driver, ALL_LEDS_OFF);
     unregister_chrdev_region(start, 1);
 }
 
@@ -145,13 +142,6 @@ static int device_open(struct inode *inode, struct file *file)
 
     Device_Open++;
 
-    /* Initialize msg */
-    sprintf(msg, "I already told you %d times Hello world!\n", counter++);
-
-    /* Initially, this points to the beginning of the message */
-    msg_Ptr = msg;
-    set_leds(kbd_driver,ALL_LEDS_OFF);
-
     return SUCCESS;
 }
 
@@ -161,7 +151,7 @@ static int device_open(struct inode *inode, struct file *file)
 static int device_release(struct inode *inode, struct file *file)
 {
     Device_Open--;		/* We're now ready for our next caller */
-
+    
     return 0;
 }
 
@@ -197,39 +187,8 @@ static ssize_t device_read(struct file *filp,	/* see include/linux/fs.h   */
                            size_t length,	/* length of the buffer     */
                            loff_t * offset)
 {
-    /*
-     * Number of bytes actually written to the buffer
-     */
-    int bytes_to_read = length;
-
-    /*
-     * If we're at the end of the message,
-     * return 0 -> end of file
-     */
-    if (*msg_Ptr == 0)
-        return 0;
-
-    /* Make sure we don't read more chars than
-     * those remaining to read
-    	 */
-    if (bytes_to_read > strlen(msg_Ptr))
-        bytes_to_read=strlen(msg_Ptr);
-
-    /*
-     * Actually transfer the data onto the userspace buffer.
-     * For this task we use copy_to_user() due to security issues
-     */
-    if (copy_to_user(buffer,msg_Ptr,bytes_to_read))
-        return -EFAULT;
-
-    /* Update the pointer for the next read operation */
-    msg_Ptr+=bytes_to_read;
-
-    /*
-     * The read operation returns the actual number of bytes
-     * we copied  in the user's buffer
-     */
-    return bytes_to_read;
+    printk(KERN_ALERT "Sorry, this operation isn't supported.\n");
+    return 0;
 }
 
 /*
@@ -242,23 +201,25 @@ device_write(struct file *filp, const char *buff, size_t len, loff_t * off)
     int bytes_to_write = len;
     int mask = 0x0;
     int i = 0;
+    char in[100];
 
-    if(copy_to_user(msg_Ptr,buff,bytes_to_write)){
+    //set_leds(kbd_driver, LED_0);
+    if(copy_from_user(in,buff,bytes_to_write)){
         return -EFAULT;
     }
     
     while(i < bytes_to_write && mask != ALL_LEDS_ON){
-        char c = msg_Ptr[i];
+        char c = in[i];
         switch (c)
         {
         case '1':
-            mask |= LED_0;
+            mask = mask | LED_0;
             break;
         case '2':
-            mask |= LED_1;
+            mask = mask | LED_1;
             break;
         case '3':
-            mask |= LED_2;
+            mask = mask | LED_2;
             break;
         default:
             break;

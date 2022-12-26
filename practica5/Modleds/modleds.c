@@ -38,7 +38,7 @@ static inline int set_leds(struct tty_driver* handler, unsigned int mask)
 static int __init modleds_init(void)
 {
     kbd_driver= get_kbd_driver_handler();
-    set_leds(kbd_driver,ALL_LEDS_ON);
+    set_leds(kbd_driver,ALL_LEDS_ON  );
     return 0;
 }
 

@@ -1,1 +1,0 @@
-cmd_/home/daniel/Documentos/GitHub/SO/practica5/charleds/chardev_leds.mod := { echo  /home/daniel/Documentos/GitHub/SO/practica5/charleds/chardev_leds.o;  echo; } > /home/daniel/Documentos/GitHub/SO/practica5/charleds/chardev_leds.mod

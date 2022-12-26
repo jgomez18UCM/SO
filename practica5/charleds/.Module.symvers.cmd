@@ -1,1 +1,0 @@
-cmd_/home/daniel/Documentos/GitHub/SO/practica5/charleds/Module.symvers := sed 's/\.ko$$/\.o/' /home/daniel/Documentos/GitHub/SO/practica5/charleds/modules.order | scripts/mod/modpost -m -a  -o /home/daniel/Documentos/GitHub/SO/practica5/charleds/Module.symvers -e -i Module.symvers   -T -

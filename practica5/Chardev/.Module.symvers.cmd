@@ -1,1 +1,0 @@
-cmd_/home/daniel/Documentos/GitHub/SO/practica5/Chardev/Module.symvers := sed 's/\.ko$$/\.o/' /home/daniel/Documentos/GitHub/SO/practica5/Chardev/modules.order | scripts/mod/modpost -m -a  -o /home/daniel/Documentos/GitHub/SO/practica5/Chardev/Module.symvers -e -i Module.symvers   -T -
